@@ -26,6 +26,9 @@ func (k KerbruteSession) HandleKerbError(err error) (bool, string) {
 	if strings.Contains(eString, "KDC_ERR_WRONG_REALM") {
 		return true, "KDC ERROR - Wrong Realm. Try adjusting the domain?"
 	}
+	if strings.Contains(eString, "KDC_ERR_ETYPE_NOSUPP") {
+		return true, "KDC ERROR - KDC Encryption Type Not Supported"
+	}
 	if strings.Contains(eString, "KDC_ERR_C_PRINCIPAL_UNKNOWN") {
 		return true, "User does not exist"
 	}
