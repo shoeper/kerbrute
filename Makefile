@@ -1,16 +1,16 @@
 TARGET=./dist
 ARCHS=amd64 386 arm arm64
 GOOS=windows linux darwin
-PACKAGENAME="github.com/ropnop/kerbrute"
+PACKAGENAME="github.com/shoeper/kerbrute"
 
 COMMIT=`git rev-parse --short HEAD`
 DATE=`date +%m/%d/%y`
 GOVERSION=`go version | cut -d " " -f 3`
 
 ifdef VERSION
-	VERSION := $(VERSION)
+	VERSION := "$(VERSION)@shoeper/kerbrute"
 else
-	VERSION := dev
+	VERSION := "dev@shoeper/kerbrute"
 endif
 
 LDFLAGS="-X ${PACKAGENAME}/util.GitCommit=${COMMIT} \
@@ -47,7 +47,7 @@ mac: ## Make Darwin (Mac) x86, x64 and ARM Binaries
 
 clean: ## Delete any binaries
 	@rm -f ${TARGET}/* ; \
-	go clean -i -n github.com/ropnop/kerbrute ; \
+	go clean -i -n github.com/shoeper/kerbrute ; \
 	echo "Done."
 
 all: ## Make Windows, Linux and Mac Binaries

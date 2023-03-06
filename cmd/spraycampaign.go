@@ -2,14 +2,14 @@ package cmd
 
 import (
 	"bufio"
+	"fmt"
 	"os"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
-    "strconv"
-    "fmt"
 
-	"github.com/ropnop/kerbrute/util"
+	"github.com/shoeper/kerbrute/util"
 
 	"github.com/spf13/cobra"
 )
@@ -43,30 +43,30 @@ func init() {
 }
 
 func sprayCampaign(cmd *cobra.Command, args []string) {
-    if len(args) != 4 {
-        logger.Log.Error("You must specify a passfile containing passwords as well as the time between sweeps in millis and then the number of passwords per sweep")
-        os.Exit(1)
-    }
-	usernamelist  := args[0]
-    passwordfile  := args[1]
+	if len(args) != 4 {
+		logger.Log.Error("You must specify a passfile containing passwords as well as the time between sweeps in millis and then the number of passwords per sweep")
+		os.Exit(1)
+	}
+	usernamelist := args[0]
+	passwordfile := args[1]
 	campaigndelay := args[2]
-	maxpersweep   := args[3]
+	maxpersweep := args[3]
 
-    maxPerSweep,err := strconv.Atoi(maxpersweep)
-    if err!=nil {
-        logger.Log.Error(err.Error())
-        return
-    }
+	maxPerSweep, err := strconv.Atoi(maxpersweep)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
 
-    campaignDelay,err := strconv.Atoi(campaigndelay)
-    if err!=nil {
-        logger.Log.Error(err.Error())
-        return
-    }
+	campaignDelay, err := strconv.Atoi(campaigndelay)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
+	}
 
 	stopOnSuccess = false
 
-	credChan :=  make(chan [2]string, threads)
+	credChan := make(chan [2]string, threads)
 	defer cancel()
 
 	var wg sync.WaitGroup
@@ -91,58 +91,58 @@ func sprayCampaign(cmd *cobra.Command, args []string) {
 
 	start := time.Now()
 
-    var passwords_to_try []string
-    var passwords_tried  []string
+	var passwords_to_try []string
+	var passwords_tried []string
 
-    // read passwords and updates the list
-    passwords_to_try,err = util.GetPasswords(passwordfile,passwords_to_try,passwords_tried,false,&logger)
+	// read passwords and updates the list
+	passwords_to_try, err = util.GetPasswords(passwordfile, passwords_to_try, passwords_tried, false, &logger)
 
-    if err != nil {
-        logger.Log.Error(err.Error())
-        return
-    }
-
-    if len(passwords_to_try) == 0 {
-        logger.Log.Error("[-] No passwords present in provided file")
-        return
-    } else {
-        logger.Log.Debugf("[*] %d Passwords loaded",len(passwords_to_try))
-    }
-    // read the usernames
-    var usernames []string
-	for scanner.Scan() {
-        usernameline := scanner.Text()
-        username, err := util.FormatUsername(usernameline)
-        if err != nil {
-            logger.Log.Debugf("[!] %q - %v", usernameline, err.Error())
-            continue
-        }
-        usernames=append(usernames,username)
+	if err != nil {
+		logger.Log.Error(err.Error())
+		return
 	}
 
-    triedThisSweep := 0
-    //for _,password := range passwords_to_try {
-    for {
-        password, passwords_to_try = passwords_to_try[0], passwords_to_try[1:]
-        logger.Log.Infof("[*] Spraying password: %s",password)
-        for _,username := range usernames {
-            cred := [2]string{username,password}
-            credChan <- cred
-            passwords_tried=append(passwords_tried,password)
-            time.Sleep(time.Duration(delay) * time.Millisecond)
-        }
-        triedThisSweep++
-        // updates any new passwords that have been added to the file
-        passwords_to_try,err = util.GetPasswords(passwordfile,passwords_to_try,passwords_tried,true,&logger)
-        if len (passwords_to_try) == 0 {
-            break
-        }
-        if triedThisSweep >= maxPerSweep {
-            triedThisSweep = 0
-            logger.Log.Info(fmt.Sprintf("[*] Sleeping for %d minutes until next sweep\n",campaignDelay))
-            time.Sleep(time.Duration(campaignDelay) * (time.Millisecond * 1000 * 60))
-        }
-    }
+	if len(passwords_to_try) == 0 {
+		logger.Log.Error("[-] No passwords present in provided file")
+		return
+	} else {
+		logger.Log.Debugf("[*] %d Passwords loaded", len(passwords_to_try))
+	}
+	// read the usernames
+	var usernames []string
+	for scanner.Scan() {
+		usernameline := scanner.Text()
+		username, err := util.FormatUsername(usernameline)
+		if err != nil {
+			logger.Log.Debugf("[!] %q - %v", usernameline, err.Error())
+			continue
+		}
+		usernames = append(usernames, username)
+	}
+
+	triedThisSweep := 0
+	//for _,password := range passwords_to_try {
+	for {
+		password, passwords_to_try = passwords_to_try[0], passwords_to_try[1:]
+		logger.Log.Infof("[*] Spraying password: %s", password)
+		for _, username := range usernames {
+			cred := [2]string{username, password}
+			credChan <- cred
+			passwords_tried = append(passwords_tried, password)
+			time.Sleep(time.Duration(delay) * time.Millisecond)
+		}
+		triedThisSweep++
+		// updates any new passwords that have been added to the file
+		passwords_to_try, err = util.GetPasswords(passwordfile, passwords_to_try, passwords_tried, true, &logger)
+		if len(passwords_to_try) == 0 {
+			break
+		}
+		if triedThisSweep >= maxPerSweep {
+			triedThisSweep = 0
+			logger.Log.Info(fmt.Sprintf("[*] Sleeping for %d minutes until next sweep\n", campaignDelay))
+			time.Sleep(time.Duration(campaignDelay) * (time.Millisecond * 1000 * 60))
+		}
+	}
 
 	close(credChan)
 	wg.Wait()

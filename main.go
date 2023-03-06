@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/ropnop/kerbrute/cmd"
-	"github.com/ropnop/kerbrute/util"
+	"github.com/shoeper/kerbrute/cmd"
+	"github.com/shoeper/kerbrute/util"
 )
 
 func main() {

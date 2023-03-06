@@ -2,16 +2,17 @@ package session
 
 import (
 	"fmt"
-	"github.com/ropnop/kerbrute/util"
 	"html/template"
 	"os"
 	"strings"
 
-	"github.com/ropnop/gokrb5/v8/iana/errorcode"
+	"github.com/shoeper/kerbrute/util"
 
-	kclient "github.com/ropnop/gokrb5/v8/client"
-	kconfig "github.com/ropnop/gokrb5/v8/config"
-	"github.com/ropnop/gokrb5/v8/messages"
+	"github.com/shoeper/gokrb5/v8/iana/errorcode"
+
+	kclient "github.com/shoeper/gokrb5/v8/client"
+	kconfig "github.com/shoeper/gokrb5/v8/config"
+	"github.com/shoeper/gokrb5/v8/messages"
 )
 
 const krb5ConfigTemplateDNS = `[libdefaults]
